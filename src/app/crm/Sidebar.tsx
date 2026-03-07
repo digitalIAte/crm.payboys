@@ -59,10 +59,10 @@ export default function Sidebar() {
     ];
 
     return (
-        <aside className="w-64 bg-white border-r border-gray-100 flex flex-col shadow-sm z-10">
-            <div className="h-16 flex items-center px-6 border-b border-gray-50">
-                <Link href="/crm" className="text-xl font-black bg-clip-text text-transparent bg-gradient-to-r from-payboys to-payboys">
-                    DIGITAL<span className="opacity-80">IATE</span> CRM
+        <aside className="w-64 bg-[#0a0a0a] border-r border-gray-800 flex flex-col shadow-sm z-10">
+            <div className="h-16 flex items-center px-6 border-b border-gray-800">
+                <Link href="/crm" className="flex items-center">
+                    <img src="/images/logo_payboys.png" alt="PAYBOYS CRM" className="h-8 w-auto object-contain" />
                 </Link>
             </div>
 
@@ -76,8 +76,8 @@ export default function Sidebar() {
                             className={`
                                 group flex items-center px-3 py-2.5 text-sm font-semibold rounded-lg transition-all duration-150
                                 ${isActive
-                                    ? "bg-payboys/10 text-payboys"
-                                    : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
+                                    ? "bg-payboys/20 text-payboys"
+                                    : "text-gray-400 hover:bg-white/5 hover:text-white"
                                 }
                             `}
                         >
@@ -99,10 +99,10 @@ export default function Sidebar() {
                 })}
             </nav>
 
-            <div className="p-4 border-t border-gray-50">
-                <div className="bg-gradient-to-br from-payboys/5 to-payboys/5 rounded-xl p-4 text-center border border-payboys/10">
+            <div className="p-4 border-t border-gray-800">
+                <div className="bg-gradient-to-br from-white/5 to-white/5 rounded-xl p-4 text-center border border-white/10">
                     <p className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">Desarrollado por</p>
-                    <div className="font-bold text-gray-800 tracking-tight">Abdel Otsmani</div>
+                    <div className="font-bold text-gray-200 tracking-tight">Abdel Otsmani</div>
                     <div className="text-[10px] font-semibold text-payboys mt-1 uppercase">AI-Powered System</div>
                 </div>
             </div>
