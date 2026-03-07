@@ -22,6 +22,7 @@ export interface Lead {
     score: number;
     owner_email: string;
     created_at: string;
+    source?: string;
 }
 
 export async function fetchLeads(): Promise<Lead[]> {
