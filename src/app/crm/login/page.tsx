@@ -10,7 +10,7 @@ export default function Login() {
                 <div className="max-w-md w-full space-y-8 relative z-10 bg-neutral-900/50 backdrop-blur-xl p-10 rounded-2xl border border-neutral-800 shadow-2xl">
 
                     <div className="text-center">
-                        <img src="/images/PAYBOYS_logo.webp" alt="PAYBOYS CRM" className="w-20 h-20 object-contain mx-auto mb-6" />
+                        <img src="/images/logo_payboys.png" alt="PAYBOYS CRM" className="w-20 h-20 object-contain mx-auto mb-6" />
                         <h2 className="text-3xl font-bold text-white tracking-tight">Iniciar Sesión</h2>
                         <p className="text-neutral-400 mt-2 text-sm">Ingresa tus credenciales para acceder al CRM.</p>
                     </div>
