@@ -1,11 +1,29 @@
-import { Metadata } from "next";
-import ClientLayout from "./ClientLayout";
+"use client";
 
-export const metadata: Metadata = {
-    title: "PAYBOYS CRM",
-    description: "Intelligent Lead Management Dashboard",
-};
+import Link from "next/link";
+import { Users, LayoutDashboard, Settings } from "lucide-react";
+import { usePathname } from "next/navigation";
+import Sidebar from "./Sidebar";
 
 export default function CRMLayout({ children }: { children: React.ReactNode }) {
-    return <ClientLayout>{children}</ClientLayout>;
+    const pathname = usePathname();
+    const isLoginPage = pathname === "/crm/login";
+
+    if (isLoginPage) {
+        return <div className="min-h-screen bg-[#0a0a0a]">{children}</div>;
+    }
+
+    return (
+        <div className="flex h-screen bg-[#F8FAFC]">
+            <Sidebar />
+            <main className="flex-1 overflow-y-auto relative">
+                {/* Subtle top decoration */}
+                <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-payboys/10 to-transparent -z-10 pointer-events-none"></div>
+
+                <div className="p-10 pt-12 min-h-full">
+                    {children}
+                </div>
+            </main>
+        </div>
+    );
 }

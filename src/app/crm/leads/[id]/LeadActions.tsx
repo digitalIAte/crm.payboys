@@ -98,7 +98,7 @@ export default function LeadActions({ lead }: { lead: Lead }) {
                         <option value="won">Won</option>
                     </select>
                 </div>
-                {isUpdating && <div className="flex items-center text-sm text-digitaliate animate-pulse mt-4">Saving...</div>}
+                {isUpdating && <div className="flex items-center text-sm text-payboys animate-pulse mt-4">Saving...</div>}
             </div>
 
             {/* Quick Communicator */}
@@ -137,7 +137,7 @@ export default function LeadActions({ lead }: { lead: Lead }) {
             <div className="mt-6 pt-4 border-t">
                 <h4 className="text-sm font-semibold mb-2">New Note</h4>
                 <textarea
-                    className="w-full border border-gray-300 rounded-md p-3 text-sm focus:ring-2 focus:ring-digitaliate outline-none"
+                    className="w-full border border-gray-300 rounded-md p-3 text-sm focus:ring-2 focus:ring-payboys outline-none"
                     rows={3}
                     placeholder="Add a note or log an external interaction..."
                     value={note}

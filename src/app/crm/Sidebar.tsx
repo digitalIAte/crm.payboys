@@ -2,73 +2,109 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Users, LayoutDashboard, Settings, LogOut } from "lucide-react";
+import { Users, LayoutDashboard, Settings, BarChart3, MessageSquareText } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export default function Sidebar() {
     const pathname = usePathname();
+    const [newLeadsCount, setNewLeadsCount] = useState(0);
 
-    const isActive = (path: string) => {
-        if (path === '/crm' && pathname === '/crm') return true;
-        if (path !== '/crm' && pathname.startsWith(path)) return true;
-        return false;
-    };
+    // Poll for new leads every 30 seconds compared to last visit
+    useEffect(() => {
+        const checkNewLeads = async () => {
+            try {
+                // If we are ON the leads page, update the "last visited" timestamp
+                if (pathname === "/crm/leads") {
+                    localStorage.setItem("last_leads_visit", new Date().toISOString());
+                    setNewLeadsCount(0);
+                    return;
+                }
+
+                // If not, see how many leads were created since our last visit
+                const lastVisit = localStorage.getItem("last_leads_visit");
+                if (!lastVisit) {
+                    localStorage.setItem("last_leads_visit", new Date(Date.now() - 86400000).toISOString());
+                    return;
+                }
+
+                // Call a quick analytics endpoint or custom endpoint to check counts
+                const res = await fetch("/api/analytics");
+                const data = await res.json();
+
+                if (data && data.leadsByDay && data.leadsByDay.length > 0) {
+                    // Very simple heuristic: if there are new leads today, and we haven't visited leads today, show a badge.
+                    // For a true implementation, we'd need an endpoint like /api/leads/count?since=timestamp
+                    // We'll approximate by checking the most recent day's count
+                    const todayDate = new Date().toISOString().split('T')[0];
+                    const todayData = data.leadsByDay.find((d: any) => new Date(d.date).toISOString().split('T')[0] === todayDate);
+
+                    if (todayData && new Date(lastVisit) < new Date(new Date().setHours(0, 0, 0, 0))) {
+                        setNewLeadsCount(parseInt(todayData.count));
+                    }
+                }
+            } catch (e) { }
+        };
+
+        checkNewLeads();
+        const interval = setInterval(checkNewLeads, 30000);
+        return () => clearInterval(interval);
+    }, [pathname]);
+
+    const navigation = [
+        { name: "Dashboard", href: "/crm", icon: LayoutDashboard },
+        { name: "Analytics", href: "/crm/analytics", icon: BarChart3 },
+        { name: "Leads Pipeline", href: "/crm/leads", icon: Users, badge: newLeadsCount },
+        { name: "Plantillas", href: "/crm/templates", icon: MessageSquareText },
+        { name: "Settings", href: "/crm/settings", icon: Settings },
+    ];
 
     return (
-        <aside className="w-72 bg-slate-900 text-white flex flex-col shadow-2xl z-20">
-            <div className="p-6 flex items-center space-x-3 border-b border-slate-800">
-                <div className="w-10 h-10 flex items-center justify-center rounded-lg bg-payboys text-black font-extrabold text-xl shadow-lg shadow-payboys/20">
-                    P
-                </div>
-                <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-payboys-light to-white bg-clip-text text-transparent">
-                    PAYBOYS CRM
-                </span>
+        <aside className="w-64 bg-white border-r border-gray-100 flex flex-col shadow-sm z-10">
+            <div className="h-16 flex items-center px-6 border-b border-gray-50">
+                <Link href="/crm" className="text-xl font-black bg-clip-text text-transparent bg-gradient-to-r from-payboys to-payboys">
+                    DIGITAL<span className="opacity-80">IATE</span> CRM
+                </Link>
             </div>
 
-            <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto mt-4">
-                <p className="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Overview</p>
-                <Link
-                    href="/crm"
-                    className={`flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 group ${isActive('/crm')
-                        ? 'bg-payboys shadow-md shadow-payboys/20 text-black'
-                        : 'text-slate-400 hover:bg-slate-800 hover:text-white'
-                        }`}
-                >
-                    <LayoutDashboard size={20} className={isActive('/crm') ? 'text-black/80' : 'text-slate-500 group-hover:text-slate-300'} />
-                    <span className="font-medium">Dashboard</span>
-                </Link>
+            <nav className="flex-1 px-4 py-6 space-y-1">
+                {navigation.map((item) => {
+                    const isActive = pathname === item.href || (pathname.startsWith(item.href) && item.href !== "/crm");
+                    return (
+                        <Link
+                            key={item.name}
+                            href={item.href}
+                            className={`
+                                group flex items-center px-3 py-2.5 text-sm font-semibold rounded-lg transition-all duration-150
+                                ${isActive
+                                    ? "bg-payboys/10 text-payboys"
+                                    : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
+                                }
+                            `}
+                        >
+                            <item.icon
+                                className={`mr-3 h-5 w-5 flex-shrink-0 transition-colors duration-150
+                                    ${isActive ? "text-payboys" : "text-gray-400 group-hover:text-gray-500"}
+                                `}
+                                aria-hidden="true"
+                            />
+                            {item.name}
 
-                <Link
-                    href="/crm/leads"
-                    className={`flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 flex-1 group ${isActive('/crm/leads')
-                        ? 'bg-payboys shadow-md shadow-payboys/20 text-black'
-                        : 'text-slate-400 hover:bg-slate-800 hover:text-white'
-                        }`}
-                >
-                    <Users size={20} className={isActive('/crm/leads') ? 'text-black/80' : 'text-slate-500 group-hover:text-slate-300'} />
-                    <span className="font-medium flex-1">Leads Pipeline</span>
-                </Link>
+                            {item.badge ? (
+                                <span className="ml-auto bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm animate-pulse">
+                                    {item.badge} Novedades
+                                </span>
+                            ) : null}
+                        </Link>
+                    )
+                })}
             </nav>
 
-            <div className="p-4 border-t border-slate-800">
-                <div className="bg-slate-800/50 rounded-xl p-4 mb-4">
-                    <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center text-sm font-bold border border-slate-600">
-                            P
-                        </div>
-                        <div>
-                            <p className="text-sm font-bold text-white">PAYBOYS Admin</p>
-                            <p className="text-xs text-slate-400">admin@payboys.es</p>
-                        </div>
-                    </div>
+            <div className="p-4 border-t border-gray-50">
+                <div className="bg-gradient-to-br from-payboys/5 to-payboys/5 rounded-xl p-4 text-center border border-payboys/10">
+                    <p className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">Desarrollado por</p>
+                    <div className="font-bold text-gray-800 tracking-tight">Abdel Otsmani</div>
+                    <div className="text-[10px] font-semibold text-payboys mt-1 uppercase">AI-Powered System</div>
                 </div>
-
-                <Link
-                    href="/crm/login"
-                    className="flex items-center space-x-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-red-500/10 hover:text-red-400 transition-all duration-200 group"
-                >
-                    <LogOut size={20} className="group-hover:text-red-400 text-slate-500 -ml-1" />
-                    <span className="font-medium">Log out</span>
-                </Link>
             </div>
         </aside>
     );

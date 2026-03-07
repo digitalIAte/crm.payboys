@@ -1,22 +1,33 @@
 import { fetchLeadById } from "@/lib/api";
 import Link from "next/link";
 import LeadActions from "./LeadActions";
+import TagsEditor from "./TagsEditor";
+import RemindersPanel from "./RemindersPanel";
+import DuplicateDetector from "./DuplicateDetector";
 
 export const dynamic = "force-dynamic";
 
 export default async function LeadDetailPage({ params }: { params: { id: string } }) {
-    const data = await fetchLeadById(params.id);
+    const rawData = await fetchLeadById(params.id);
 
-    if (!data || !data.lead) {
-        return <div className="p-8 text-center text-red-500">Lead not found or Error connecting to API</div>;
+    if (!rawData || !rawData.lead) {
+        return (
+            <div className="text-center py-20">
+                <h2 className="text-2xl font-bold text-gray-900">Lead not found</h2>
+                <Link href="/crm/leads" className="text-indigo-600 hover:text-indigo-900 mt-4 inline-block">← Back to Leads</Link>
+            </div>
+        );
     }
 
-    const { lead, conversations, activities } = data;
+    const { lead, conversations, activities } = rawData;
+    const initialTags = lead.tags || [];
 
     return (
-        <div className="space-y-8 max-w-5xl mx-auto">
-            <div className="flex justify-between items-center">
-                <Link href="/crm/leads" className="text-digitaliate-dark hover:text-digitaliate font-bold mb-4 flex items-center">&larr; Back to Leads</Link>
+        <div className="max-w-6xl mx-auto space-y-6">
+            <DuplicateDetector lead={lead} />
+
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <Link href="/crm/leads" className="text-payboys-dark hover:text-payboys font-bold flex items-center">&larr; Back to Leads</Link>
             </div>
 
             <div className="bg-white shadow-sm rounded-xl p-8 border border-gray-100 flex flex-col md:flex-row justify-between items-start">
@@ -55,33 +66,37 @@ export default async function LeadDetailPage({ params }: { params: { id: string 
                             ))}
                         </div>
                     }
+                    <TagsEditor leadId={lead.id} initialTags={initialTags} />
                 </div>
 
                 {/* Activities and Tracking */}
-                <div className="bg-white shadow-sm rounded-xl border border-gray-100 p-6 space-y-4">
-                    <h3 className="text-xl font-bold text-gray-900 border-b border-gray-100 pb-4">Interaction Tracking</h3>
+                <div className="space-y-6">
+                    <div className="bg-white shadow-sm rounded-xl border border-gray-100 p-6 space-y-4">
+                        <h3 className="text-xl font-bold text-gray-900 border-b border-gray-100 pb-4">Interaction Tracking</h3>
 
-                    {/* Inject Client Component Controls */}
-                    <LeadActions lead={lead} />
+                        <LeadActions lead={lead} />
 
-                    <div className="mt-8 space-y-3">
-                        <h4 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-3">Activity Log</h4>
-                        {activities.length === 0 ? <p className="text-gray-400 text-sm italic">No activities yet.</p> :
-                            activities.map((a: any) => (
-                                <div key={a.id} className="group flex flex-col justify-center py-3 border-b border-gray-50 last:border-0 hover:bg-gray-50 -mx-4 px-4 transition duration-150">
-                                    <div className="flex justify-between items-center mb-1">
-                                        <div className="flex items-center space-x-2">
-                                            <span className="w-2 h-2 rounded-full bg-digitaliate"></span>
-                                            <strong className="text-sm font-semibold text-gray-800 capitalize">{a.type}</strong>
+                        <div className="mt-8 space-y-3">
+                            <h4 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-3">Activity Log</h4>
+                            {activities.length === 0 ? <p className="text-gray-400 text-sm italic">No activities yet.</p> :
+                                activities.map((a: any) => (
+                                    <div key={a.id} className="group flex flex-col justify-center py-3 border-b border-gray-50 last:border-0 hover:bg-gray-50 -mx-4 px-4 transition duration-150">
+                                        <div className="flex justify-between items-center mb-1">
+                                            <div className="flex items-center space-x-2">
+                                                <span className="w-2 h-2 rounded-full bg-payboys"></span>
+                                                <strong className="text-sm font-semibold text-gray-800 capitalize">{a.type}</strong>
+                                            </div>
+                                            <span className="text-xs text-gray-400 group-hover:text-gray-500 transition-colors">{new Date(a.created_at).toLocaleDateString()}</span>
                                         </div>
-                                        <span className="text-xs text-gray-400 group-hover:text-gray-500 transition-colors">{new Date(a.created_at).toLocaleDateString()}</span>
+                                        <p className="text-sm text-gray-600 pl-4">{a.note}</p>
+                                        <div className="text-[10px] text-gray-400 mt-1 pl-4 uppercase">By: {a.owner_email || a.source || "System"}</div>
                                     </div>
-                                    <p className="text-sm text-gray-600 pl-4">{a.note}</p>
-                                    <div className="text-[10px] text-gray-400 mt-1 pl-4 uppercase">By: {a.owner_email || a.source || "System"}</div>
-                                </div>
-                            ))
-                        }
+                                ))
+                            }
+                        </div>
                     </div>
+
+                    <RemindersPanel leadId={lead.id} />
                 </div>
             </div>
         </div>
