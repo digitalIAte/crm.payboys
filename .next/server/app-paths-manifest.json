@@ -1,5 +1,4 @@
 {
-  "/_not-found/page": "app/_not-found/page.js",
-  "/crm/login/page": "app/crm/login/page.js",
-  "/crm/page": "app/crm/page.js"
+  "/crm/page": "app/crm/page.js",
+  "/crm/login/page": "app/crm/login/page.js"
 }
