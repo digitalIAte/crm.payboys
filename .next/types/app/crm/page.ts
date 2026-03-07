@@ -1,4 +1,4 @@
-// File: C:\Abdel\Antigravity\n8n-antigravity\dashboard-payboys\src\app\crm\page.tsx
+// File: c:\Abdel\Antigravity\n8n-antigravity\dashboard-payboys\src\app\crm\page.tsx
 import * as entry from '../../../../src/app/crm/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

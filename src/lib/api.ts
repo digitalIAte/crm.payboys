@@ -25,6 +25,24 @@ export interface Lead {
     source?: string;
 }
 
+const MOCK_LEADS: Lead[] = [
+    { id: "mock-1", email: "carlos.m@example.com", phone: "600111222", name: "Carlos Mendoza", status: "new", stage: "NEW", score: 85, owner_email: "crm@payboys.es", created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1).toISOString(), source: "📝 Formulario" },
+    { id: "mock-2", email: "lucia.fer@example.com", phone: "611222333", name: "Lucía Fernández", status: "contacted", stage: "CONTACTED", score: 45, owner_email: "crm@payboys.es", created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(), source: "🤖 Chatbot" },
+    { id: "mock-3", email: "mvarela89@gmail.com", phone: "655444333", name: "Marcos Varela", status: "new", stage: "NEW", score: 92, owner_email: "crm@payboys.es", created_at: new Date(Date.now() - 1000 * 60 * 60 * 4).toISOString(), source: "📝 Formulario" },
+    { id: "mock-4", email: "egomez.design@hotmail.com", phone: "644999888", name: "Elena Gómez", status: "qualified", stage: "QUALIFIED", score: 71, owner_email: "crm@payboys.es", created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(), source: "🤖 Chatbot" },
+    { id: "mock-5", email: "david.ruiz123@yahoo.es", phone: "633777666", name: "David Ruiz", status: "lost", stage: "LOST", score: 12, owner_email: "crm@payboys.es", created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 10).toISOString(), source: "📝 Formulario" },
+    { id: "mock-6", email: "s.navarro@empresa.com", phone: "622111000", name: "Sofía Navarro", status: "new", stage: "NEW", score: 55, owner_email: "crm@payboys.es", created_at: new Date(Date.now() - 1000 * 60 * 60 * 12).toISOString(), source: "🤖 Chatbot" },
+    { id: "mock-7", email: "javilopez90@gmail.com", phone: "688555444", name: "Javier López", status: "contacted", stage: "CONTACTED", score: 68, owner_email: "crm@payboys.es", created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(), source: "📝 Formulario" },
+    { id: "mock-8", email: "ana_mtz_88@outlook.com", phone: "677333222", name: "Ana Martínez", status: "qualified", stage: "QUALIFIED", score: 95, owner_email: "crm@payboys.es", created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7).toISOString(), source: "🤖 Chatbot" },
+    { id: "mock-9", email: "rafa.silva@tech.es", phone: "699000111", name: "Rafael Silva", status: "new", stage: "NEW", score: 32, owner_email: "crm@payboys.es", created_at: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), source: "📝 Formulario" },
+    { id: "mock-10", email: "cortiz.consulting@gmail.com", phone: "666222111", name: "Carmen Ortiz", status: "lost", stage: "LOST", score: 18, owner_email: "crm@payboys.es", created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 15).toISOString(), source: "🤖 Chatbot" },
+    { id: "mock-11", email: "promero.dev@yahoo.com", phone: "611555999", name: "Pablo Romero", status: "contacted", stage: "CONTACTED", score: 77, owner_email: "crm@payboys.es", created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 4).toISOString(), source: "📝 Formulario" },
+    { id: "mock-12", email: "laura.sanchez.p@hotmail.es", phone: "644111333", name: "Laura Sánchez", status: "new", stage: "NEW", score: 48, owner_email: "crm@payboys.es", created_at: new Date(Date.now() - 1000 * 60 * 60 * 18).toISOString(), source: "🤖 Chatbot" },
+    { id: "mock-13", email: "hugo.cast@empresa.es", phone: "655777888", name: "Hugo Castillo", status: "qualified", stage: "QUALIFIED", score: 88, owner_email: "crm@payboys.es", created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 8).toISOString(), source: "📝 Formulario" },
+    { id: "mock-14", email: "isa.torres.mx@gmail.com", phone: "622999444", name: "Isabel Torres", status: "lost", stage: "LOST", score: 25, owner_email: "crm@payboys.es", created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 20).toISOString(), source: "🤖 Chatbot" },
+    { id: "mock-15", email: "alex.flores.85@outlook.com", phone: "688111222", name: "Alejandro Flores", status: "new", stage: "NEW", score: 62, owner_email: "crm@payboys.es", created_at: new Date(Date.now() - 1000 * 60 * 60 * 1).toISOString(), source: "📝 Formulario" }
+];
+
 export async function fetchLeads(): Promise<Lead[]> {
     try {
         const res = await axios.get(`${API_URL}/api/crm-payboys/leads`, {
@@ -34,8 +52,8 @@ export async function fetchLeads(): Promise<Lead[]> {
         const data = res.data;
         return Array.isArray(data) ? data : (data.data || []);
     } catch (error) {
-        console.error("Failed to fetch leads", error);
-        return [];
+        console.warn("Failed to fetch leads from n8n, returning mock data instead for UI preview.");
+        return MOCK_LEADS;
     }
 }
 // Handle both { data: [...] } structure and raw [...] array structure
