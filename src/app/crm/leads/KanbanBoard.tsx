@@ -2,9 +2,17 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
+import { Trash2 } from "lucide-react";
 import { Lead } from "@/lib/api";
 
-const INITIAL_COLUMNS = [
+type Column = {
+    id: string;
+    title: string;
+    color: string;
+    isCustom?: boolean;
+};
+
+const INITIAL_COLUMNS: Column[] = [
     { id: "new", title: "Nuevos", color: "border-blue-800 bg-blue-900/20" },
     { id: "contacted", title: "Contactados", color: "border-payboys/40 bg-payboys/10" },
     { id: "qualified", title: "Cualificados", color: "border-emerald-800 bg-emerald-900/20" },
@@ -13,14 +21,21 @@ const INITIAL_COLUMNS = [
 
 export default function KanbanBoard({ leads, onStatusUpdate }: { leads: Lead[], onStatusUpdate: (ids: string[], status: string) => Promise<boolean> }) {
     const [localLeads, setLocalLeads] = useState<Lead[]>(leads);
-    const [columns, setColumns] = useState(INITIAL_COLUMNS);
+    const [columns, setColumns] = useState<Column[]>(INITIAL_COLUMNS);
     const [isPending, startTransition] = useTransition();
 
     const handleAddColumn = () => {
         const title = prompt("Nombre de la nueva columna:");
         if (title) {
             const id = title.toLowerCase().replace(/\s+/g, '-');
-            setColumns([...columns, { id, title, color: "border-gray-700 bg-gray-800/30" }]);
+            setColumns([...columns, { id, title, color: "border-gray-700 bg-gray-800/30", isCustom: true }]);
+        }
+    };
+
+    const handleDeleteColumn = (id: string, title: string) => {
+        if (confirm(`¿Seguro que quieres borrar la columna "${title}"? Sus leads volverán a "Nuevos".`)) {
+            setColumns(columns.filter(c => c.id !== id));
+            setLocalLeads(localLeads.map(l => l.status === id ? { ...l, status: "new" } : l));
         }
     };
 
@@ -92,9 +107,16 @@ export default function KanbanBoard({ leads, onStatusUpdate }: { leads: Lead[], 
                             <div className={`p-4 border-b border-gray-800 ${col.color} rounded-t-xl bg-[#1a1a1a]`}>
                                 <h3 className="font-bold text-white flex items-center justify-between">
                                     {col.title}
-                                    <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-[#222222] text-gray-300 shadow-sm border border-gray-700">
-                                        {columnLeads.length}
-                                    </span>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-[#222222] text-gray-300 shadow-sm border border-gray-700">
+                                            {columnLeads.length}
+                                        </span>
+                                        {(col as any).isCustom && (
+                                            <button onClick={() => handleDeleteColumn(col.id, col.title)} className="p-1 hover:bg-red-500/20 text-gray-500 hover:text-red-500 rounded transition-colors" title="Borrar columna">
+                                                <Trash2 size={16} />
+                                            </button>
+                                        )}
+                                    </div>
                                 </h3>
                             </div>
 
