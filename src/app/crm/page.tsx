@@ -1,10 +1,10 @@
-import { fetchLeads } from "@/lib/api";
+import { getLeads } from "@/lib/services";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
 export default async function CRMPage() {
-    const leads = await fetchLeads();
+    const leads = await getLeads();
 
     // Calculate KPIs
     const totalLeads = leads.length;
