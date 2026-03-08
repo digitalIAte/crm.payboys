@@ -1,12 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Pool } from "pg";
+import pool from "@/lib/db";
 
-const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: process.env.DATABASE_URL?.includes("localhost")
-        ? false
-        : { rejectUnauthorized: false },
-});
+export const dynamic = "force-dynamic";
 
 export async function GET() {
     try {
