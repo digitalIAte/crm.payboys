@@ -1,13 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Pool } from "pg";
-
-const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: process.env.DATABASE_URL?.includes("localhost")
-        ? false
-        : { rejectUnauthorized: false },
-});
-
+import pool from "@/lib/db";
 import { getLeadById } from "@/lib/services";
 
 export const dynamic = "force-dynamic";
@@ -18,16 +10,11 @@ export async function GET(
     { params }: { params: { id: string } }
 ) {
     const { id } = params;
-
-    if (!id) {
-        return NextResponse.json({ error: "Lead ID is required" }, { status: 400 });
-    }
+    if (!id) return NextResponse.json({ error: "Lead ID is required" }, { status: 400 });
 
     try {
         const data = await getLeadById(id);
-        if (!data) {
-            return NextResponse.json({ error: "Lead not found" }, { status: 404 });
-        }
+        if (!data) return NextResponse.json({ error: "Lead not found" }, { status: 404 });
         return NextResponse.json(data);
     } catch (error: any) {
         console.error("Fetch lead details error:", error.message);
@@ -42,27 +29,21 @@ export async function PATCH(
 ) {
     const { id } = params;
     const body = await request.json();
-
-    if (!id) {
-        return NextResponse.json({ error: "Lead ID is required" }, { status: 400 });
-    }
+    if (!id) return NextResponse.json({ error: "Lead ID is required" }, { status: 400 });
 
     try {
         const client = await pool.connect();
         try {
             const fields = Object.keys(body);
-            if (fields.length === 0) {
-                return NextResponse.json({ error: "No fields to update" }, { status: 400 });
-            }
+            if (fields.length === 0) return NextResponse.json({ error: "No fields to update" }, { status: 400 });
 
             const setClause = fields.map((f, i) => `${f} = $${i + 1}`).join(", ");
             const values = fields.map(f => body[f]);
 
             await client.query(
-                `UPDATE leads SET ${setClause} WHERE id = $${fields.length + 1}`,
+                `UPDATE pb_leads SET ${setClause} WHERE id = $${fields.length + 1}`,
                 [...values, id]
             );
-
             return NextResponse.json({ success: true });
         } finally {
             client.release();
@@ -79,24 +60,17 @@ export async function DELETE(
     { params }: { params: { id: string } }
 ) {
     const { id } = params;
-
-    if (!id) {
-        return NextResponse.json({ error: "Lead ID is required" }, { status: 400 });
-    }
+    if (!id) return NextResponse.json({ error: "Lead ID is required" }, { status: 400 });
 
     try {
         const client = await pool.connect();
         try {
             await client.query("BEGIN");
-            await client.query("DELETE FROM activities WHERE lead_id = $1", [id]);
-            await client.query("DELETE FROM conversations WHERE lead_id = $1", [id]);
-            const result = await client.query("DELETE FROM leads WHERE id = $1 RETURNING id", [id]);
+            await client.query("DELETE FROM pb_activities WHERE lead_id = $1", [id]);
+            await client.query("DELETE FROM pb_conversations WHERE lead_id = $1", [id]);
+            const result = await client.query("DELETE FROM pb_leads WHERE id = $1 RETURNING id", [id]);
             await client.query("COMMIT");
-
-            if (result.rowCount === 0) {
-                return NextResponse.json({ error: "Lead not found" }, { status: 404 });
-            }
-
+            if (result.rowCount === 0) return NextResponse.json({ error: "Lead not found" }, { status: 404 });
             return NextResponse.json({ success: true, deletedId: id });
         } catch (err) {
             await client.query("ROLLBACK");

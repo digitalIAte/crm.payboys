@@ -1,10 +1,8 @@
 import { Pool } from "pg";
 
-const connectionString = process.env.DATABASE_URL;
-
 const pool = new Pool({
-    connectionString,
-    ssl: (!connectionString || connectionString.includes("localhost") || connectionString.includes("sslmode=disable"))
+    connectionString: process.env.DATABASE_URL,
+    ssl: process.env.DATABASE_URL?.includes("localhost")
         ? false
         : { rejectUnauthorized: false },
 });

@@ -7,7 +7,7 @@ export async function GET() {
     try {
         const client = await pool.connect();
         try {
-            const result = await client.query(`SELECT * FROM templates ORDER BY name ASC`);
+            const result = await client.query(`SELECT * FROM pb_templates ORDER BY name ASC`);
             return NextResponse.json({ templates: result.rows });
         } finally {
             client.release();
@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
         const client = await pool.connect();
         try {
             const result = await client.query(
-                `INSERT INTO templates (name, channel, subject, body) VALUES ($1, $2, $3, $4) RETURNING *`,
+                `INSERT INTO pb_templates (name, channel, subject, body) VALUES ($1, $2, $3, $4) RETURNING *`,
                 [name, channel, subject || null, body]
             );
             return NextResponse.json({ template: result.rows[0] });

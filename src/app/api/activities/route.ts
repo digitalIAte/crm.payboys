@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
         const client = await pool.connect();
         try {
             await client.query(
-                `INSERT INTO activities (lead_id, type, note, source) VALUES ($1, $2, $3, $4)`,
+                `INSERT INTO pb_activities (lead_id, type, note, source) VALUES ($1, $2, $3, $4)`,
                 [lead_id, type, note, source || 'system']
             );
             return NextResponse.json({ success: true });

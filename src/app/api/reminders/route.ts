@@ -3,7 +3,6 @@ import pool from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
-// GET /api/reminders?leadId=123 (or all pending if no leadId)
 export async function GET(request: NextRequest) {
     const leadId = request.nextUrl.searchParams.get("leadId");
 
@@ -12,10 +11,10 @@ export async function GET(request: NextRequest) {
         try {
             let query = `
                 SELECT r.*, l.name as lead_name 
-                FROM reminders r
-                LEFT JOIN leads l ON r.lead_id = l.id
+                FROM pb_reminders r
+                LEFT JOIN pb_leads l ON r.lead_id = l.id
             `;
-            const params = [];
+            const params: string[] = [];
 
             if (leadId) {
                 query += ` WHERE r.lead_id = $1 ORDER BY r.due_date ASC`;
@@ -35,7 +34,6 @@ export async function GET(request: NextRequest) {
     }
 }
 
-// POST /api/reminders
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
@@ -48,7 +46,7 @@ export async function POST(request: NextRequest) {
         const client = await pool.connect();
         try {
             const result = await client.query(
-                `INSERT INTO reminders (lead_id, text, due_date) VALUES ($1, $2, $3) RETURNING *`,
+                `INSERT INTO pb_reminders (lead_id, text, due_date) VALUES ($1, $2, $3) RETURNING *`,
                 [lead_id, text, due_date]
             );
             return NextResponse.json({ reminder: result.rows[0] });
@@ -61,7 +59,6 @@ export async function POST(request: NextRequest) {
     }
 }
 
-// PATCH /api/reminders
 export async function PATCH(request: NextRequest) {
     try {
         const body = await request.json();
@@ -74,7 +71,7 @@ export async function PATCH(request: NextRequest) {
         const client = await pool.connect();
         try {
             const result = await client.query(
-                `UPDATE reminders SET done = $1 WHERE id = $2 RETURNING *`,
+                `UPDATE pb_reminders SET done = $1 WHERE id = $2 RETURNING *`,
                 [done, id]
             );
             return NextResponse.json({ reminder: result.rows[0] });
