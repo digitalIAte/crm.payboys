@@ -1,4 +1,4 @@
-import { fetchLeadById } from "@/lib/api";
+import { getLeadById, getKanbanColumns } from "@/lib/services";
 import Link from "next/link";
 import LeadActions from "./LeadActions";
 import TagsEditor from "./TagsEditor";
@@ -8,7 +8,10 @@ import DuplicateDetector from "./DuplicateDetector";
 export const dynamic = "force-dynamic";
 
 export default async function LeadDetailPage({ params }: { params: { id: string } }) {
-    const rawData = await fetchLeadById(params.id);
+    const [rawData, columns] = await Promise.all([
+        getLeadById(params.id),
+        getKanbanColumns()
+    ]);
 
     if (!rawData || !rawData.lead) {
         return (
@@ -74,7 +77,7 @@ export default async function LeadDetailPage({ params }: { params: { id: string 
                     <div className="bg-white shadow-sm rounded-xl border border-gray-100 p-6 space-y-4">
                         <h3 className="text-xl font-bold text-gray-900 border-b border-gray-100 pb-4">Interaction Tracking</h3>
 
-                        <LeadActions lead={lead} />
+                        <LeadActions lead={lead} columns={columns} />
 
                         <div className="mt-8 space-y-3">
                             <h4 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-3">Activity Log</h4>

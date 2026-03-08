@@ -3,10 +3,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Lead } from "@/lib/api";
+import { KanbanColumn } from "@/lib/services";
 import { submitLeadUpdate, submitNewActivity, triggerWhatsApp, triggerEmail, deleteLead } from "./actions";
 import { Mail, MessageCircle, Trash2 } from "lucide-react";
 
-export default function LeadActions({ lead }: { lead: Lead }) {
+export default function LeadActions({ lead, columns }: { lead: Lead, columns: KanbanColumn[] }) {
     const router = useRouter();
     const [isUpdating, setIsUpdating] = useState(false);
     const [note, setNote] = useState("");
@@ -14,7 +15,7 @@ export default function LeadActions({ lead }: { lead: Lead }) {
 
     const [isActioning, setIsActioning] = useState(false);
 
-    const [currentStatus, setCurrentStatus] = useState(lead.status);
+    const [currentStatus, setCurrentStatus] = useState(lead.status || (columns?.[0]?.id || ""));
     const [currentStage, setCurrentStage] = useState(lead.stage);
 
     const handleStatusChange = async (newStatus: string) => {
@@ -78,10 +79,14 @@ export default function LeadActions({ lead }: { lead: Lead }) {
                         onChange={(e) => handleStatusChange(e.target.value)}
                         className="mt-1 block rounded-md border-gray-300 shadow-sm focus:border-red-300 focus:ring focus:ring-red-200 focus:ring-opacity-50 text-sm"
                     >
-                        <option value="new">New</option>
-                        <option value="contacted">Contacted</option>
-                        <option value="qualified">Qualified</option>
-                        <option value="lost">Lost</option>
+                        {columns && columns.length > 0 ? columns.map(c => <option key={c.id} value={c.id}>{c.title}</option>) : (
+                            <>
+                                <option value="new">New</option>
+                                <option value="contacted">Contacted</option>
+                                <option value="qualified">Qualified</option>
+                                <option value="lost">Lost</option>
+                            </>
+                        )}
                     </select>
                 </div>
                 <div>

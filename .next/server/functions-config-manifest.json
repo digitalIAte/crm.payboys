@@ -1,1 +1,1 @@
-{"version":1,"functions":{"/crm/leads":{},"/crm/analytics":{},"/crm/templates":{},"/crm/leads/[id]":{},"/crm":{}}}
+{"version":1,"functions":{"/api/analytics":{},"/api/leads/duplicates":{},"/api/leads":{},"/api/leads/[id]":{},"/crm/analytics":{},"/api/activities":{},"/crm/leads":{},"/crm/templates":{},"/crm/leads/[id]":{},"/crm":{}}}

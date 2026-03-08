@@ -1,42 +1,70 @@
 "use server";
 import { revalidatePath } from "next/cache";
-import axios from "axios";
-import https from "https";
-
-const API_URL = process.env.N8N_WEBHOOK_URL || "https://n8n.javiasl.es/webhook";
-const API_KEY = process.env.N8N_API_KEY || "sk_dash_67890";
-const UPDATE_LEAD_WEBHOOK_ID = process.env.N8N_UPDATE_LEAD_WEBHOOK_ID || "ac177c2e-c6fe-4f34-a734-56da8a44993d";
-
-const httpsAgent = new https.Agent({ rejectUnauthorized: false });
+import pool from "@/lib/db";
 
 export async function bulkUpdateStatus(ids: string[], status: string): Promise<boolean> {
     try {
-        await Promise.all(ids.map(id =>
-            axios.patch(`${API_URL}/${UPDATE_LEAD_WEBHOOK_ID}?id=${id}`, { status }, {
-                headers: { "X-API-KEY": API_KEY, "Content-Type": "application/json" },
-                httpsAgent
-            })
-        ));
+        if (ids.length === 0) return true;
+        const client = await pool.connect();
+        try {
+            await client.query(
+                "UPDATE leads SET status = $1, updated_at = NOW() WHERE id = ANY($2::uuid[])",
+                [status, ids]
+            );
+        } finally {
+            client.release();
+        }
         revalidatePath("/crm/leads");
         revalidatePath("/crm");
         return true;
     } catch (e: any) {
-        console.error("Bulk status update error:", e.message);
+        console.error("Bulk status update DB error:", e.message);
         return false;
     }
 }
 
 export async function bulkDeleteLeads(ids: string[]): Promise<boolean> {
     try {
-        const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://crm-crm.vvy9xr.easypanel.host";
-        await Promise.all(ids.map(id =>
-            axios.delete(`${appUrl}/api/leads/${encodeURIComponent(id)}`, { httpsAgent })
-        ));
+        if (ids.length === 0) return true;
+        const client = await pool.connect();
+        try {
+            await client.query("BEGIN");
+            await client.query("DELETE FROM activities WHERE lead_id = ANY($1::uuid[])", [ids]);
+            await client.query("DELETE FROM conversations WHERE lead_id = ANY($1::uuid[])", [ids]);
+            await client.query("DELETE FROM reminders WHERE lead_id = ANY($1::uuid[])", [ids]);
+            await client.query("DELETE FROM leads WHERE id = ANY($1::uuid[])", [ids]);
+            await client.query("COMMIT");
+        } catch (err) {
+            await client.query("ROLLBACK");
+            throw err;
+        } finally {
+            client.release();
+        }
         revalidatePath("/crm/leads");
         revalidatePath("/crm");
         return true;
     } catch (e: any) {
-        console.error("Bulk delete error:", e.message);
+        console.error("Bulk delete DB error:", e.message);
         return false;
     }
+}
+
+import { addKanbanColumn as addCol, updateKanbanColumn as updateCol } from "@/lib/services";
+
+export async function addKanbanColumnAction(title: string, color: string): Promise<boolean> {
+    const success = await addCol(title, color);
+    if (success) {
+        revalidatePath("/crm/leads");
+        revalidatePath("/crm");
+    }
+    return success;
+}
+
+export async function updateKanbanColumnAction(id: string, title: string): Promise<boolean> {
+    const success = await updateCol(id, title);
+    if (success) {
+        revalidatePath("/crm/leads");
+        revalidatePath("/crm");
+    }
+    return success;
 }

@@ -1,4 +1,17 @@
 {
+  "/_not-found/page": "app/_not-found/page.js",
+  "/api/templates/route": "app/api/templates/route.js",
+  "/api/reminders/route": "app/api/reminders/route.js",
+  "/page": "app/page.js",
+  "/api/leads/[id]/route": "app/api/leads/[id]/route.js",
+  "/api/activities/route": "app/api/activities/route.js",
+  "/api/analytics/route": "app/api/analytics/route.js",
+  "/api/leads/duplicates/route": "app/api/leads/duplicates/route.js",
+  "/api/leads/route": "app/api/leads/route.js",
+  "/crm/analytics/page": "app/crm/analytics/page.js",
+  "/crm/templates/page": "app/crm/templates/page.js",
+  "/crm/leads/page": "app/crm/leads/page.js",
+  "/crm/leads/[id]/page": "app/crm/leads/[id]/page.js",
   "/crm/page": "app/crm/page.js",
   "/crm/login/page": "app/crm/login/page.js"
 }

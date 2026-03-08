@@ -2,11 +2,13 @@
 
 import { useState } from "react";
 import { Lead } from "@/lib/api";
+import { KanbanColumn } from "@/lib/services";
 import LeadsClient from "./LeadsClient";
 import KanbanBoard from "./KanbanBoard";
 import { bulkDeleteLeads, bulkUpdateStatus } from "./bulk-actions";
 
-export default function LeadsPageClient({ initialLeads }: { initialLeads: Lead[] }) {
+export default function LeadsPageClient({ initialLeads, columns }: { initialLeads: Lead[], columns: KanbanColumn[] }) {
+    console.log("LeadsPageClient received leads:", initialLeads?.length || 0);
     const [view, setView] = useState<"table" | "kanban">("table");
 
     return (
@@ -32,11 +34,12 @@ export default function LeadsPageClient({ initialLeads }: { initialLeads: Lead[]
             {view === "table" ? (
                 <LeadsClient
                     leads={initialLeads}
+                    columns={columns}
                     onBulkDelete={bulkDeleteLeads}
                     onBulkStatus={bulkUpdateStatus}
                 />
             ) : (
-                <KanbanBoard leads={initialLeads} onStatusUpdate={bulkUpdateStatus} />
+                <KanbanBoard leads={initialLeads} columns={columns} onStatusUpdate={bulkUpdateStatus} />
             )}
         </div>
     );
