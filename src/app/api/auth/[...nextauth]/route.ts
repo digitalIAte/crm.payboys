@@ -65,7 +65,7 @@ const handler = NextAuth({
             return session;
         }
     },
-    secret: process.env.NEXTAUTH_SECRET,
+    secret: process.env.NEXTAUTH_SECRET || "payboys-secret-key-12345",
 });
 
 export { handler as GET, handler as POST };
