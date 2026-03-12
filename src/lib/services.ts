@@ -203,6 +203,20 @@ export async function updatePassword(userId: string, currentPass: string, newPas
 }
 
 export async function ensureDatabaseReady() {
-    // Basic verification - assume install route handled full schema
-    return true;
+    const client = await pool.connect();
+    try {
+        const res = await client.query(`
+            SELECT EXISTS (
+                SELECT FROM information_schema.tables 
+                WHERE table_schema = 'public' 
+                AND table_name = 'pb_users'
+            );
+        `);
+        return res.rows[0].exists;
+    } catch (e: any) {
+        console.error("Database check error:", e.message);
+        return false;
+    } finally {
+        client.release();
+    }
 }

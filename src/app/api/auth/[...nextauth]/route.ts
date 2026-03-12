@@ -13,22 +13,32 @@ const handler = NextAuth({
                 password: { label: "Contraseña", type: "password" }
             },
             async authorize(credentials) {
+                console.log("Auth attempt for:", credentials?.email);
+                
                 if (!credentials?.email || !credentials?.password) {
+                    console.log("Missing credentials");
                     return null;
                 }
 
                 // Ensure tables exist before querying
-                await ensureDatabaseReady();
+                const dbReady = await ensureDatabaseReady();
+                if (!dbReady) {
+                    console.error("CRITICAL: pb_users table not found! Run /api/install first.");
+                }
 
                 const client = await pool.connect();
                 try {
                     const res = await client.query("SELECT * FROM pb_users WHERE email = $1", [credentials.email]);
+                    console.log("Database result count:", res.rows.length);
+
                     if (res.rows.length === 0) {
+                        console.log("User not found in pb_users");
                         return null;
                     }
 
                     const user = res.rows[0];
                     const isPasswordValid = await bcrypt.compare(credentials.password, user.password);
+                    console.log("Password valid:", isPasswordValid);
 
                     if (!isPasswordValid) {
                         return null;

@@ -1,4 +1,36 @@
+"use client";
+
+import { useState } from "react";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
+
 export default function Login() {
+    const router = useRouter();
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [error, setError] = useState<string | null>(null);
+    const [loading, setLoading] = useState(false);
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setError(null);
+        setLoading(true);
+
+        const result = await signIn("credentials", {
+            email,
+            password,
+            redirect: false,
+        });
+
+        if (result?.error) {
+            setError("Credenciales inválidas. Por favor, intenta de nuevo.");
+            setLoading(false);
+        } else {
+            router.push("/crm/leads");
+            router.refresh();
+        }
+    };
+
     return (
         <div className="min-h-screen flex items-center justify-center bg-[#0a0a0a] text-white font-sans selection:bg-payboys selection:text-black relative overflow-hidden">
 
@@ -17,21 +49,46 @@ export default function Login() {
             <div className="max-w-md w-full space-y-8 relative z-10 bg-neutral-900/70 backdrop-blur-xl p-10 rounded-2xl border border-neutral-800 shadow-2xl mx-4">
 
                 <div className="text-center">
+                    <div className="w-16 h-16 bg-white rounded-xl flex items-center justify-center p-2 mb-4 mx-auto shadow-lg border border-gray-100">
+                        <img src="/images/logo_payboys.png" alt="Payboys CRM" className="w-full h-full object-contain" />
+                    </div>
                     <h2 className="text-3xl font-bold text-white tracking-tight">Iniciar Sesión</h2>
                     <p className="text-neutral-400 mt-2 text-sm">Ingresa tus credenciales para acceder al CRM.</p>
                 </div>
 
-                <form className="mt-8 space-y-6" action="/crm/leads">
-                    <input type="hidden" name="remember" defaultValue="true" />
+                <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+                    {error && (
+                        <div className="bg-red-900/50 text-red-200 p-3 rounded-lg text-sm border border-red-800 animate-shake">
+                            {error}
+                        </div>
+                    )}
 
                     <div className="space-y-4">
                         <div>
                             <label htmlFor="email-address" className="block text-sm font-medium text-neutral-300 mb-1.5">Correo Electrónico</label>
-                            <input id="email-address" name="email" type="email" required className="appearance-none block w-full px-4 py-3 bg-black/50 border border-neutral-800 rounded-xl placeholder-neutral-600 text-white focus:outline-none focus:ring-2 focus:ring-payboys focus:border-transparent transition-all duration-200 sm:text-sm" placeholder="tu@email.com" />
+                            <input 
+                                id="email-address" 
+                                name="email" 
+                                type="email" 
+                                required 
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                className="appearance-none block w-full px-4 py-3 bg-black/50 border border-neutral-800 rounded-xl placeholder-neutral-600 text-white focus:outline-none focus:ring-2 focus:ring-payboys focus:border-transparent transition-all duration-200 sm:text-sm" 
+                                placeholder="tu@email.com" 
+                            />
                         </div>
                         <div>
                             <label htmlFor="password" className="block text-sm font-medium text-neutral-300 mb-1.5">Contraseña</label>
-                            <input id="password" name="password" type="password" required className="appearance-none block w-full px-4 py-3 bg-black/50 border border-neutral-800 rounded-xl placeholder-neutral-600 text-white focus:outline-none focus:ring-2 focus:ring-payboys focus:border-transparent transition-all duration-200 sm:text-sm" placeholder="••••••••" />
+                            <input 
+                                id="password" 
+                                name="password" 
+                                type="password" 
+                                required 
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                className="appearance-none block w-full px-4 py-3 bg-black/50 border border-neutral-800 rounded-xl placeholder-neutral-600 text-white focus:outline-none focus:ring-2 focus:ring-payboys focus:border-transparent transition-all duration-200 sm:text-sm" 
+                                placeholder="••••••••" 
+                            />
                         </div>
                     </div>
 
@@ -51,8 +108,12 @@ export default function Login() {
                     </div>
 
                     <div>
-                        <button type="submit" className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-bold rounded-xl text-black bg-payboys hover:bg-[#e6ad06] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-payboys focus:ring-offset-[#0a0a0a] transition-all duration-200 shadow-[0_0_20px_rgba(255,193,7,0.3)] hover:shadow-[0_0_25px_rgba(255,193,7,0.4)]">
-                            Entrar al CRM
+                        <button 
+                            type="submit" 
+                            disabled={loading}
+                            className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-bold rounded-xl text-black bg-payboys hover:bg-[#e6ad06] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-payboys focus:ring-offset-[#0a0a0a] transition-all duration-200 shadow-[0_0_20px_rgba(255,193,7,0.3)] hover:shadow-[0_0_25px_rgba(255,193,7,0.4)] disabled:opacity-50"
+                        >
+                            {loading ? "Iniciando..." : "Entrar al CRM"}
                         </button>
                     </div>
                 </form>
