@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { Pool } from "pg";
+import bcrypt from "bcryptjs";
 
 export const dynamic = "force-dynamic";
 
@@ -99,6 +100,37 @@ export async function GET() {
                 ('lost', 'Perdidos', 'border-red-800 bg-red-900/10', 3)
             ON CONFLICT (id) DO NOTHING;
 
+            CREATE TABLE IF NOT EXISTS pb_workspace_settings (
+                id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+                calendly_url VARCHAR(255),
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+                updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+            );
+            
+            INSERT INTO pb_workspace_settings (calendly_url)
+            SELECT NULL WHERE NOT EXISTS (SELECT * FROM pb_workspace_settings);
+
+            CREATE TABLE IF NOT EXISTS pb_appointments (
+                id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+                lead_id UUID REFERENCES pb_leads(id) ON DELETE CASCADE,
+                title VARCHAR(255) NOT NULL,
+                status VARCHAR(50) DEFAULT 'scheduled',
+                start_time TIMESTAMP WITH TIME ZONE NOT NULL,
+                end_time TIMESTAMP WITH TIME ZONE NOT NULL,
+                meeting_url TEXT,
+                external_id VARCHAR(255) UNIQUE,
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+                updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+            );
+
+            CREATE TABLE IF NOT EXISTS pb_users (
+                id SERIAL PRIMARY KEY,
+                name VARCHAR(100),
+                email VARCHAR(100) UNIQUE NOT NULL,
+                password VARCHAR(255) NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+
             CREATE OR REPLACE FUNCTION pb_update_updated_at()
             RETURNS TRIGGER AS $$
             BEGIN
@@ -123,6 +155,17 @@ export async function GET() {
             WHERE table_schema = 'public' AND table_name LIKE 'pb_%'
             ORDER BY table_name
         `);
+
+        // Admin User Check for Payboys
+        const adminCheck = await client.query("SELECT * FROM pb_users WHERE email = $1", ["admin@payboys.es"]);
+        if (adminCheck.rows.length === 0) {
+            console.log("Provisioning default admin user for Payboys...");
+            const hashed = await bcrypt.hash("admin123", 10);
+            await client.query(
+                "INSERT INTO pb_users (name, email, password) VALUES ($1, $2, $3)",
+                ["Admin Payboys", "admin@payboys.es", hashed]
+            );
+        }
 
         return NextResponse.json({
             success: true,

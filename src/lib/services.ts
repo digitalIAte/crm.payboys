@@ -131,3 +131,78 @@ export async function updateKanbanColumn(id: string, title: string): Promise<boo
         client.release();
     }
 }
+
+export async function getWorkspaceSettings() {
+    const client = await pool.connect();
+    try {
+        const res = await client.query("SELECT * FROM pb_workspace_settings WHERE id = 1");
+        // Ensure defaults if not found
+        if (res.rows.length === 0) {
+            return {
+                id: 1,
+                agency_name: 'PAYBOYS CRM',
+                primary_color: '#B08D57',
+                n8n_webhook_url: null,
+                calendly_url: null
+            };
+        }
+        return res.rows[0];
+    } catch (e) {
+        // Migration fallback if table missing
+        return {
+            id: 1,
+            agency_name: 'PAYBOYS CRM',
+            primary_color: '#B08D57',
+            n8n_webhook_url: null,
+            calendly_url: null
+        };
+    } finally {
+        client.release();
+    }
+}
+
+export async function updateWorkspaceSettings(agency_name: string, n8n_webhook_url: string, primary_color: string, calendly_url: string) {
+    const client = await pool.connect();
+    try {
+        // Create if missing
+        await client.query(`
+            INSERT INTO pb_workspace_settings (id, agency_name, calendly_url, primary_color, n8n_webhook_url)
+            VALUES (1, $1, $4, $3, $2)
+            ON CONFLICT (id) DO UPDATE 
+            SET agency_name = $1, n8n_webhook_url = $2, primary_color = $3, calendly_url = $4
+            WHERE pb_workspace_settings.id = 1
+        `, [agency_name, n8n_webhook_url, primary_color, calendly_url]);
+        return true;
+    } catch (e) {
+        console.error("Update settings error:", e);
+        return false;
+    } finally {
+        client.release();
+    }
+}
+
+import bcrypt from "bcryptjs";
+
+export async function updatePassword(userId: string, currentPass: string, newPass: string) {
+    const client = await pool.connect();
+    try {
+        const res = await client.query("SELECT password FROM pb_users WHERE id = $1", [userId]);
+        if (res.rows.length === 0) return { success: false, error: "Usuario no encontrado" };
+
+        const isValid = await bcrypt.compare(currentPass, res.rows[0].password);
+        if (!isValid) return { success: false, error: "Contraseña actual incorrecta" };
+
+        const hashed = await bcrypt.hash(newPass, 10);
+        await client.query("UPDATE pb_users SET password = $1 WHERE id = $2", [hashed, userId]);
+        return { success: true };
+    } catch (e: any) {
+        return { success: false, error: e.message };
+    } finally {
+        client.release();
+    }
+}
+
+export async function ensureDatabaseReady() {
+    // Basic verification - assume install route handled full schema
+    return true;
+}

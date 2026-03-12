@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Users, LayoutDashboard, Settings, BarChart3, MessageSquareText } from "lucide-react";
+import { Users, LayoutDashboard, Settings, BarChart3, MessageSquareText, Calendar } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export default function Sidebar() {
@@ -54,6 +54,7 @@ export default function Sidebar() {
         { name: "Dashboard", href: "/crm", icon: LayoutDashboard },
         { name: "Analytics", href: "/crm/analytics", icon: BarChart3 },
         { name: "Leads Pipeline", href: "/crm/leads", icon: Users, badge: newLeadsCount },
+        { name: "Calendar", href: "/crm/calendar", icon: Calendar },
         { name: "Plantillas", href: "/crm/templates", icon: MessageSquareText },
         { name: "Settings", href: "/crm/settings", icon: Settings },
     ];
