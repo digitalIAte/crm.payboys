@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
             // Check for exact email or phone matches, excluding the current lead
             const result = await client.query(
                 `SELECT id, name, email, status, created_at 
-                 FROM leads 
+                 FROM pb_leads 
                  WHERE (email = $1 OR (phone = $2 AND phone IS NOT NULL AND phone != ''))
                  AND id != $3
                  LIMIT 5`,
